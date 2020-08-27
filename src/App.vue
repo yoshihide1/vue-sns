@@ -1,12 +1,52 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/user">User</router-link>
+      <div v-if="loginUser">
+        <router-link to="/">Home</router-link>|
+        <router-link to="/user">User</router-link>
+        <button @click="signOut">(仮)サインアウト</button>
+      </div>
+      <div v-if="noUser">
+        <router-link to="/signUp">新規登録</router-link>|
+        <router-link to="/signIn">サインイン</router-link>
+      </div>
     </div>
-    <router-view/>
+    <router-view />
   </div>
 </template>
+<script>
+import { mapState } from "vuex";
+import firebase from "./plugins/firebase";
+
+export default {
+  data() {
+    return {
+      loginUser: false,
+      noUser: true,
+    };
+  },
+  computed: {
+    ...mapState(["user"]),
+  },
+
+  created() {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.loginUser = true;
+        this.noUser = false;
+      } else {
+        this.loginUser = false;
+        this.noUser = true;
+      }
+    });
+  },
+  methods: {
+    signOut() {
+      this.$store.dispatch("signOut");
+    },
+  },
+};
+</script>
 
 <style lang="scss">
 #app {
