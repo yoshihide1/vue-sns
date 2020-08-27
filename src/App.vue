@@ -4,7 +4,7 @@
       <div v-if="loginUser">
         <router-link to="/">Home</router-link>|
         <router-link to="/user">User</router-link>
-        <button @click="signOut">(仮)サインアウト</button>
+        <SignOut />
       </div>
       <div v-if="noUser">
         <router-link to="/signUp">新規登録</router-link>|
@@ -17,8 +17,11 @@
 <script>
 import { mapState } from "vuex";
 import firebase from "./plugins/firebase";
-
+import SignOut from "./components/auth/signOut";
 export default {
+  components: {
+    SignOut,
+  },
   data() {
     return {
       loginUser: false,
@@ -39,11 +42,6 @@ export default {
         this.noUser = true;
       }
     });
-  },
-  methods: {
-    signOut() {
-      this.$store.dispatch("signOut");
-    },
   },
 };
 </script>

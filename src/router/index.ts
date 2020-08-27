@@ -2,8 +2,8 @@ import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
 import User from '../views/user.vue'
-import SignIn from '../components/signIn.vue'
-import SignUp from '../components/signUp.vue'
+import SignIn from '../components/auth/signIn.vue'
+import SignUp from '../components/auth/signUp.vue'
 import firebase from "../plugins/firebase";
 
 

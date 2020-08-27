@@ -11,11 +11,7 @@ export default new Vuex.Store({
   mutations: {
   },
   actions: {
-    signOut(this: any, { commit }) {
-      firebase.auth().signOut().then(() => {
-        alert("サインアウトしました")
-      })
-    },
+   
   },
   modules: {
   }
