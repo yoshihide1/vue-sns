@@ -16,6 +16,7 @@ export default {
     return {
       storage: firebase.storage(),
       db: firebase.firestore(),
+      auth: firebase.auth(),
       image: "",
     };
   },
@@ -29,20 +30,30 @@ export default {
       storageRef
         .put(this.image)
         .then(() => {
-          storageRef.getDownloadURL()
-          .then((url) => {
+          storageRef.getDownloadURL().then((url) => {
             console.log(url);
+            this.urlSave(url);
           });
-          this.image = ""
+          this.image = "";
           console.log("完了");
         })
         .catch(() => {
-          alert('失敗しました')
+          alert("失敗しました");
         });
     },
     urlSave(imageUrl) {
-
-    }
+      const uid = this.auth.currentUser.uid;
+      this.db
+        .collection("images")
+        .add({
+          uid: uid,
+          imageUrl: imageUrl,
+          timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
+        })
+        .then(() => {
+          console.log("db完了");
+        });
+    },
   },
 };
 </script>

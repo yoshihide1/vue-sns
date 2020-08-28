@@ -34,15 +34,13 @@ export default {
         .auth()
         .createUserWithEmailAndPassword(this.email, this.password)
         .then((result) => {
-          console.log(result);
           const userData = firebase.auth().currentUser;
           userData
             .updateProfile({
               displayName: this.displayName,
             })
             .then(() => {
-              console.log(userData);
-              db.collection("users").add({
+              db.collection("users").doc(userData.uid).set({
                 displayName: userData.displayName,
                 email: userData.email,
                 uid: userData.uid,
@@ -52,7 +50,6 @@ export default {
         })
         .catch((error) => {
           alert("正しく入力してください");
-          console.log(error.message);
         });
     },
   },
