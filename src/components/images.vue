@@ -1,9 +1,13 @@
 <template>
   <div id="images">
-    <input type="file" accept=”image/*” @change="selectImage" value="画像追加" />
-    <button
-      @click="upLoad"
-    >画像追加</button>
+    <p>コメント</p>
+    <p>
+      <textarea v-model="comment" name id cols="30" rows="10"></textarea>
+    </p>
+    <p><input type="file" accept=”image/*” @change="selectImage" /></p>
+    <p>
+      <button id="postButton" @click="upLoad">投稿</button>
+    </p>
   </div>
 </template>
 
@@ -18,6 +22,7 @@ export default {
       db: firebase.firestore(),
       auth: firebase.auth(),
       image: "",
+      comment: "",
     };
   },
   methods: {
@@ -26,6 +31,12 @@ export default {
       this.image = e.target.files[0];
     },
     upLoad() {
+      const button = document.getElementById("postButton");
+      if (!this.image && !this.comment) {
+        alert("コメントを入力するか画像を選択してください");
+        return;
+      }
+      button.disabled = true;
       const storageRef = this.storage.ref().child(`images/${this.image.name}`);
       storageRef
         .put(this.image)
@@ -35,18 +46,23 @@ export default {
             this.urlSave(url);
           });
           this.image = "";
+          this.comment = "";
+          button.disabled = false;
           console.log("完了");
         })
         .catch(() => {
+          button.disabled = false;
           alert("失敗しました");
         });
     },
     urlSave(imageUrl) {
-      const uid = this.auth.currentUser.uid;
+      const user = this.auth.currentUser;
       this.db
         .collection("images")
         .add({
-          uid: uid,
+          uid: user.uid,
+          displayName: user.displayName,
+          comment: this.comment,
           imageUrl: imageUrl,
           timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
         })
