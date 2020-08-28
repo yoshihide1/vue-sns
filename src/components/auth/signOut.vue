@@ -14,7 +14,7 @@ export default {
         .signOut()
         .then(() => {
           alert("サインアウトしました");
-          this.$router.push("/signIn");
+          this.$router.push("/signUp");
         });
     },
   },

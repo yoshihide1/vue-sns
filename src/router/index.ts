@@ -18,7 +18,7 @@ const routes: Array<RouteConfig> = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/:id',
+    path: '/user/:id',
     name: 'user',
     component: User,
     meta: { requiresAuth: true }
@@ -49,10 +49,8 @@ router.beforeEach((to, from, next) => {
   if (requiresAuth) {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        console.log('user')
         next()
       } else {
-        console.log('noUser')
         next({
           path: '/signUp',
           query: { redirect: to.fullPath }
