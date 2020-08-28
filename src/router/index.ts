@@ -18,7 +18,7 @@ const routes: Array<RouteConfig> = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/user',
+    path: '/:id',
     name: 'user',
     component: User,
     meta: { requiresAuth: true }

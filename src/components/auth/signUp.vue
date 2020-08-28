@@ -2,15 +2,15 @@
   <div id="signIn">
     <p>
       DisplayName
-      <input v-model="displayName" type="text" />
+      <input v-model="displayName" type="text" placeholder="半角英数字のみ" />
     </p>
     <p>
       Email
-      <input v-model="email" type="text" />
+      <input v-model="email" type="text" placeholder="メールアドレス"/>
     </p>
     <p>
       Password
-      <input v-model="password" type="password" />
+      <input v-model="password" type="password" placeholder="パスワード" />
     </p>
     <button @click="signUp">登録</button>
   </div>
