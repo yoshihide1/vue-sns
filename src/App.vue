@@ -14,29 +14,25 @@
     <router-view />
   </div>
 </template>
-<script>
-import { mapState } from "vuex";
+
+<script lang="ts">
 import firebase from "./plugins/firebase";
-import SignOut from "./components/auth/signOut";
-export default {
+import SignOut from "./components/auth/signOut.vue";
+import { Component, Vue } from "vue-property-decorator";
+@Component({
   components: {
     SignOut,
   },
-  data() {
-    return {
-      id: "",
-      loginUser: false,
-      noUser: true,
-    };
-  },
-  computed: {
-    ...mapState(["user"]),
-  },
+})
+export default class App extends Vue {
+  id: string | null = "";
+  loginUser = false;
+  noUser = true;
 
-  created() {
+  created(): void {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        this.id = user.displayName
+        this.id = user.displayName;
         this.loginUser = true;
         this.noUser = false;
       } else {
@@ -44,8 +40,8 @@ export default {
         this.noUser = true;
       }
     });
-  },
-};
+  }
+}
 </script>
 
 <style lang="scss">

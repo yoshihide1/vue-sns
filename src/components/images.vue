@@ -11,67 +11,65 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import firebase from "../plugins/firebase";
+import { Component, Vue } from "vue-property-decorator";
 
-export default {
-  name: "images",
-  data() {
-    return {
-      storage: firebase.storage(),
-      db: firebase.firestore(),
-      auth: firebase.auth(),
-      image: "",
-      comment: "",
-    };
-  },
-  methods: {
-    selectImage(e) {
-      e.preventDefault();
-      this.image = e.target.files[0];
-    },
-    upLoad() {
-      const button = document.getElementById("postButton");
-      if (!this.image && !this.comment) {
-        alert("コメントを入力するか画像を選択してください");
-        return;
-      }
-      button.disabled = true;
-      const storageRef = this.storage.ref().child(`images/${this.image.name}`);
-      storageRef
-        .put(this.image)
-        .then(() => {
-          storageRef.getDownloadURL().then((url) => {
-            console.log(url);
-            this.urlSave(url);
-          });
-          this.image = "";
-          this.comment = "";
-          button.disabled = false;
-          console.log("完了");
-        })
-        .catch(() => {
-          button.disabled = false;
-          alert("失敗しました");
+export default class Images extends Vue {
+  storage = firebase.storage();
+  db = firebase.firestore();
+  auth = firebase.auth();
+  imageFile: any ;
+  comment: string | null;
+
+  selectImage(e: any) {
+    this.imageFile = e.target.files[0];
+  }
+  upLoad() {
+    const button = <HTMLInputElement>document.getElementById("postButton");
+    if (!this.imageFile && !this.comment) {
+      alert("コメントを入力するか画像を選択してください");
+      return;
+    }
+    button.disabled = true;
+    const storageRef = this.storage
+      .ref()
+      .child(`images/${this.imageFile.name}`);
+    storageRef
+      .put(this.imageFile)
+      .then(() => {
+        storageRef.getDownloadURL().then((url) => {
+          this.urlSave(url);
         });
-    },
-    urlSave(imageUrl) {
-      const user = this.auth.currentUser;
-      this.db
-        .collection("images")
-        .add({
-          uid: user.uid,
-          displayName: user.displayName,
-          comment: this.comment,
-          imageUrl: imageUrl,
-          timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
-        })
-        .then(() => {
-          console.log("db完了");
-        });
-    },
-  },
-};
+        this.imageFile = "";
+        this.comment = "";
+        button.disabled = false;
+        console.log("完了");
+      })
+      .catch(() => {
+        button.disabled = false;
+        alert("失敗しました");
+      });
+  }
+  urlSave(imageUrl: string) {
+    const user = this.auth.currentUser;
+    if (user === null) {
+      return;
+    }
+    this.db
+      .collection("images")
+      .add({
+        uid: user.uid,
+        displayName: user.displayName,
+        comment: this.comment,
+        imageUrl: imageUrl,
+        timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => {
+        console.log("db完了");
+      });
+  }
+}
 </script>
 
 <style>
