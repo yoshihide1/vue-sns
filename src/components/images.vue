@@ -16,8 +16,12 @@
       <p>名前:{{ image.data.displayName }}</p>
       <p>コメント:{{ image.data.comment }}</p>
       <p>docID:{{image.id}}</p>
+      <p>FileName:{{ image.data.fileName }}</p>
       <p>uid:{{ image.data.uid }}最終的に削除</p>
-      <button v-if="deleteCheck(image.data.uid)" @click="deleteButton(image.id)">削除</button>
+      <button
+        v-if="deleteCheck(image.data.uid)"
+        @click="deleteButton(image.id, image.data.fileName)"
+      >削除</button>
     </div>
   </div>
 </template>
@@ -26,13 +30,17 @@
 import firebase from "../plugins/firebase";
 import { Component, Vue } from "vue-property-decorator";
 interface ImageList {
-  displayName: string;
-  comment?: string;
-  imageUrl?: string;
-  uid: string;
-  timesStamp: {
-    nanoseconds: number;
-    seconds: number;
+  id: string;
+  data: {
+    displayName: string;
+    comment?: string;
+    imageUrl?: string;
+    fileName?: string;
+    uid: string;
+    timeStamp: {
+      nanoseconds: number;
+      seconds: number;
+    };
   };
 }
 
@@ -48,7 +56,6 @@ export default class Images extends Vue {
 
   selectImage(e: any) {
     e.preventDefault();
-    console.log(e.target.files[0]);
     this.imageFile = e.target.files[0];
   }
   downLoad() {
@@ -63,7 +70,6 @@ export default class Images extends Vue {
           console.log(doc.id, "=>", doc.data());
           imageList.push({ id: doc.id, data: doc.data() });
         });
-        console.log(imageList);
         this.images = imageList;
       });
   }
@@ -79,8 +85,9 @@ export default class Images extends Vue {
     storageRef
       .put(this.imageFile)
       .then(() => {
+        const imageFile = this.imageFile.name;
         storageRef.getDownloadURL().then((url) => {
-          this.urlSave(url);
+          this.urlSave(url, imageFile);
         });
         this.imageFile = "";
         this.postButton = false;
@@ -92,7 +99,8 @@ export default class Images extends Vue {
       });
   }
 
-  urlSave(imageUrl: string) {
+  urlSave(imageUrl: string, fileName: string) {
+    console.log(fileName);
     const user = this.auth.currentUser;
     if (user === null) {
       return;
@@ -104,6 +112,7 @@ export default class Images extends Vue {
         displayName: user.displayName,
         comment: this.comment,
         imageUrl: imageUrl,
+        fileName: fileName,
         timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
       })
       .then(() => {
@@ -111,22 +120,35 @@ export default class Images extends Vue {
         this.comment = "";
       });
   }
-  deleteCheck(uid) {
-    this.auth.currentUser;
-    if (uid === this.auth.currentUser.uid) {
+  deleteCheck(uid: string): boolean {
+    const userUid = this.auth.currentUser!.uid;
+    if (uid === userUid) {
       return true;
+    } else {
+      return false;
     }
-    return false;
   }
-  deleteButton(docId: string) {
-    firebase
-      .firestore()
+  deleteButton(docId: string, fileName: string) {
+    this.deleteStore(docId);
+    this.deleteStorage(fileName);
+  }
+  deleteStore(docId: string) {
+    this.db
       .collection("images")
       .doc(docId)
       .delete()
       .then(() => {
-        console.log("削除完了");
+        console.log("store削除完了");
         this.downLoad();
+      });
+  }
+  deleteStorage(fileName: string) {
+    this.storage
+      .ref()
+      .child(`images/${fileName}`)
+      .delete()
+      .then(() => {
+        console.log("storage削除完了");
       });
   }
 }
@@ -137,6 +159,9 @@ export default class Images extends Vue {
   width: 100%;
 }
 .image__list {
+  background-color: gainsboro;
+  padding: 1rem 0 1rem;
+  margin: 1rem 0 1rem;
   img {
     width: 100%;
   }
