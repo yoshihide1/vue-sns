@@ -12,10 +12,12 @@
       <button @click="downLoad">画像取得</button>
     </p>
     <div class="image__list" v-for="(image, index) in images" :key="index">
-      <img :src="image.imageUrl" alt />
-      <p>名前:{{ image.displayName }}</p>
-      <p>コメント:{{ image.comment }}</p>
-      <p>uid:{{ image.uid }}最終的に削除</p>
+      <img :src="image.data.imageUrl" alt />
+      <p>名前:{{ image.data.displayName }}</p>
+      <p>コメント:{{ image.data.comment }}</p>
+      <p>docID:{{image.id}}</p>
+      <p>uid:{{ image.data.uid }}最終的に削除</p>
+      <button v-if="deleteCheck(image.data.uid)" @click="deleteButton(image.id)">削除</button>
     </div>
   </div>
 </template>
@@ -59,7 +61,7 @@ export default class Images extends Vue {
       .then((snapshot) => {
         snapshot.forEach((doc) => {
           console.log(doc.id, "=>", doc.data());
-          imageList.push(doc.data());
+          imageList.push({ id: doc.id, data: doc.data() });
         });
         console.log(imageList);
         this.images = imageList;
@@ -107,6 +109,24 @@ export default class Images extends Vue {
       .then(() => {
         console.log("db完了");
         this.comment = "";
+      });
+  }
+  deleteCheck(uid) {
+    this.auth.currentUser;
+    if (uid === this.auth.currentUser.uid) {
+      return true;
+    }
+    return false;
+  }
+  deleteButton(docId: string) {
+    firebase
+      .firestore()
+      .collection("images")
+      .doc(docId)
+      .delete()
+      .then(() => {
+        console.log("削除完了");
+        this.downLoad();
       });
   }
 }
