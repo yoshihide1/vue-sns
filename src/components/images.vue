@@ -6,7 +6,7 @@
     </p>
     <p><input type="file" accept=”image/*” @change="selectImage"/></p>
     <p>
-      <button :disabled="postButton" @click="upLoad">投稿</button>
+      <button :disabled="postButton" @click="saveStorage">投稿</button>
     </p>
     <p>
       <button @click="downLoad">画像取得</button>
@@ -54,6 +54,10 @@ export default class Images extends Vue {
   comment: string | null = "";
   postButton = false;
 
+  getDate(): string {
+    const time = new Date().getTime();
+    return String(time);
+  }
   selectImage(e: any) {
     e.preventDefault();
     this.imageFile = e.target.files[0];
@@ -73,25 +77,24 @@ export default class Images extends Vue {
         this.images = imageList;
       });
   }
-  upLoad() {
+  saveStorage() {
     if (!this.imageFile && !this.comment) {
       alert("コメントを入力するか画像を選択してください");
       return;
     }
     this.postButton = true;
-    const storageRef = this.storage
-      .ref()
-      .child(`images/${this.imageFile.name}`);
+    const time = this.getDate();
+    const fileName = time + this.imageFile.name;
+    const storageRef = this.storage.ref().child(`images/${fileName}`);
     storageRef
       .put(this.imageFile)
       .then(() => {
-        const imageFile = this.imageFile.name;
         storageRef.getDownloadURL().then((url) => {
-          this.urlSave(url, imageFile);
+          this.saveStore(url, fileName);
         });
         this.imageFile = "";
         this.postButton = false;
-        console.log("完了");
+        console.log("storage完了");
       })
       .catch(() => {
         this.postButton = false;
@@ -99,7 +102,7 @@ export default class Images extends Vue {
       });
   }
 
-  urlSave(imageUrl: string, fileName: string) {
+  saveStore(imageUrl: string, fileName: string) {
     console.log(fileName);
     const user = this.auth.currentUser;
     if (user === null) {
@@ -116,8 +119,11 @@ export default class Images extends Vue {
         timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
       })
       .then(() => {
-        console.log("db完了");
+        console.log("store完了");
         this.comment = "";
+      })
+      .catch(() => {
+        alert("失敗しました");
       });
   }
   deleteCheck(uid: string): boolean {
