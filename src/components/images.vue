@@ -11,11 +11,12 @@
     <p>
       <button @click="downLoad">画像取得</button>
     </p>
-    <!-- <div v-for="image in images" :key="image.timeStamp.second">
+    <div class="image__list" v-for="(image, index) in images" :key="index">
       <img :src="image.imageUrl" alt />
-      <p>{{ image.displayName }}</p>
-      <p>{{ image.uid }}最終的に削除</p>
-    </div>-->
+      <p>名前:{{ image.displayName }}</p>
+      <p>コメント:{{ image.comment }}</p>
+      <p>uid:{{ image.uid }}最終的に削除</p>
+    </div>
   </div>
 </template>
 
@@ -38,7 +39,7 @@ export default class Images extends Vue {
   storage = firebase.storage();
   db = firebase.firestore();
   auth = firebase.auth();
-  images: ImageList[];
+  images: ImageList[] = [];
   imageFile: any = "";
   comment: string | null = "";
   postButton = false;
@@ -60,6 +61,7 @@ export default class Images extends Vue {
           console.log(doc.id, "=>", doc.data());
           imageList.push(doc.data());
         });
+        console.log(imageList);
         this.images = imageList;
       });
   }
@@ -79,7 +81,6 @@ export default class Images extends Vue {
           this.urlSave(url);
         });
         this.imageFile = "";
-        this.comment = "";
         this.postButton = false;
         console.log("完了");
       })
@@ -105,10 +106,19 @@ export default class Images extends Vue {
       })
       .then(() => {
         console.log("db完了");
+        this.comment = "";
       });
   }
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
+#images {
+  width: 100%;
+}
+.image__list {
+  img {
+    width: 100%;
+  }
+}
 </style>
