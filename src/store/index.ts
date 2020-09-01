@@ -1,17 +1,8 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import firebase from "../plugins/firebase";
+import Vuex, { StoreOptions } from 'vuex'
+import { RootState } from './types'
 
-Vue.use(Vuex)
+const store: StoreOptions<RootState> = {
 
-export default new Vuex.Store({
-  state: {
-  },
-  mutations: {
-  },
-  actions: {
-    
-  },
-  modules: {
-  }
-})
+}
+
+export default new Vuex.Store<RootState>(store)
