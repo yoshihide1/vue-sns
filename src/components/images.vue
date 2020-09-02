@@ -16,8 +16,6 @@
       <p>名前:{{ image.data.displayName }}</p>
       <p>コメント:{{ image.data.comment }}</p>
 
-      <button @click="test(image.id)">test</button>
-
       <Comment :docId="image.id" />
 
       <div v-for="(res, index) in comments" :key="index">
@@ -112,22 +110,28 @@ export default class Images extends Vue {
   }
 
   saveStore(imageUrl: string, fileName: string) {
-    console.log(fileName);
     const user = this.auth.currentUser;
     if (user === null) {
       return;
     }
+    const data = {
+      displayName: user.displayName,
+      comment: this.comment,
+      imageUrl: imageUrl,
+      fileName: fileName,
+      uid: user.uid,
+      timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
+    };
     this.db
       .collection("images")
-      .add({
-        uid: user.uid,
-        displayName: user.displayName,
-        comment: this.comment,
-        imageUrl: imageUrl,
-        fileName: fileName,
-        timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
-      })
-      .then(() => {
+      .add(data)
+      .then((doc) => {
+        console.log(doc);
+        const storeImage: ImageList = {
+          id: doc.id,
+          data: data,
+        };
+        this.images.unshift(storeImage);
         console.log("store完了");
         this.comment = "";
       })
@@ -149,8 +153,6 @@ export default class Images extends Vue {
     this.deleteStorage(fileName);
   }
   deleteComment(docId: string, subDocId: string) {
-    console.log(docId);
-    console.log(subDocId);
     this.db
       .collection("images")
       .doc(docId)

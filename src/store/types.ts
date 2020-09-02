@@ -16,10 +16,7 @@ export interface ImageList {
     imageUrl?: string;
     fileName?: string;
     uid: string;
-    timeStamp: {
-      nanoseconds: number;
-      seconds: number;
-    };
+    timeStamp?: firebase.firestore.FieldValue
   };
 }
 export interface CommentList {
