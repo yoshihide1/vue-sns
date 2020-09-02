@@ -15,9 +15,14 @@
       <img :src="image.data.imageUrl" alt />
       <p>名前:{{ image.data.displayName }}</p>
       <p>コメント:{{ image.data.comment }}</p>
-      <p>docID:{{image.id}}</p>
-      <p>FileName:{{ image.data.fileName }}</p>
-      <p>uid:{{ image.data.uid }}最終的に削除</p>
+
+      <Comment :docId="image.id" />
+      <div v-for="(res, index) in comments" :key="index">
+        <p v-if="res.docId === image.id">{{res.displayName}}>{{res.comment }}</p>
+      </div>
+      <p>削除docID:{{image.id}}</p>
+      <p>削除FileName:{{ image.data.fileName }}</p>
+      <p>削除uid:{{ image.data.uid }}</p>
       <button
         v-if="deleteCheck(image.data.uid)"
         @click="deleteButton(image.id, image.data.fileName)"
@@ -29,22 +34,13 @@
 <script lang="ts">
 import firebase from "../plugins/firebase";
 import { Component, Vue } from "vue-property-decorator";
-interface ImageList {
-  id: string;
-  data: {
-    displayName: string;
-    comment?: string;
-    imageUrl?: string;
-    fileName?: string;
-    uid: string;
-    timeStamp: {
-      nanoseconds: number;
-      seconds: number;
-    };
-  };
-}
-
-@Component({})
+import { ImageList, CommentList } from "../store/types";
+import Comment from "@/components/comment.vue";
+@Component({
+  components: {
+    Comment,
+  },
+})
 export default class Images extends Vue {
   storage = firebase.storage();
   db = firebase.firestore();
@@ -52,6 +48,7 @@ export default class Images extends Vue {
   images: ImageList[] = [];
   imageFile: any = "";
   comment: string | null = "";
+  comments: CommentList[] = [];
   postButton = false;
 
   getDate(): string {
@@ -62,20 +59,25 @@ export default class Images extends Vue {
     e.preventDefault();
     this.imageFile = e.target.files[0];
   }
-  downLoad() {
+  async downLoad() {
     const imageList: any = [];
-    this.db
+    const commentList: any = [];
+    const snapshot = await this.db
       .collection("images")
       .orderBy("timeStamp", "desc")
       .limit(5)
-      .get()
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          console.log(doc.id, "=>", doc.data());
-          imageList.push({ id: doc.id, data: doc.data() });
-        });
-        this.images = imageList;
-      });
+      .get();
+    snapshot.forEach((doc) => {
+      console.log(doc.id, "=>", doc.data());
+      imageList.push({ id: doc.id, data: doc.data() });
+    });
+    this.images = imageList;
+    const subDoc = await this.db.collectionGroup("comment").limit(10).get();
+    subDoc.forEach((doc) => {
+      console.log(doc.id, "=>", doc.data());
+      commentList.push(doc.data());
+    });
+    this.comments = commentList;
   }
   saveStorage() {
     if (!this.imageFile && !this.comment) {
