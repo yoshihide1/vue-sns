@@ -16,16 +16,25 @@
       <p>名前:{{ image.data.displayName }}</p>
       <p>コメント:{{ image.data.comment }}</p>
 
+      <button @click="test(image.id)">test</button>
+
       <Comment :docId="image.id" />
+
       <div v-for="(res, index) in comments" :key="index">
-        <p v-if="res.docId === image.id">{{res.displayName}}>{{res.comment }}</p>
+        <p v-if="res.data.docId === image.id">
+          {{res.data.displayName}}>{{res.data.comment }}
+          <button
+            v-if="deleteCheck(res.data.uid)"
+            @click="deleteComment(image.id, res.id)"
+          >コメント削除</button>
+        </p>
       </div>
       <p>削除docID:{{image.id}}</p>
       <p>削除FileName:{{ image.data.fileName }}</p>
       <p>削除uid:{{ image.data.uid }}</p>
       <button
         v-if="deleteCheck(image.data.uid)"
-        @click="deleteButton(image.id, image.data.fileName)"
+        @click="deletePost(image.id, image.data.fileName)"
       >削除</button>
     </div>
   </div>
@@ -68,14 +77,12 @@ export default class Images extends Vue {
       .limit(5)
       .get();
     snapshot.forEach((doc) => {
-      console.log(doc.id, "=>", doc.data());
       imageList.push({ id: doc.id, data: doc.data() });
     });
     this.images = imageList;
     const subDoc = await this.db.collectionGroup("comment").limit(10).get();
     subDoc.forEach((doc) => {
-      console.log(doc.id, "=>", doc.data());
-      commentList.push(doc.data());
+      commentList.push({ id: doc.id, data: doc.data() });
     });
     this.comments = commentList;
   }
@@ -136,9 +143,23 @@ export default class Images extends Vue {
       return false;
     }
   }
-  deleteButton(docId: string, fileName: string) {
+  deletePost(docId: string, fileName: string) {
     this.deleteStore(docId);
+    this.deleteStoreSub(docId);
     this.deleteStorage(fileName);
+  }
+  deleteComment(docId: string, subDocId: string) {
+    console.log(docId);
+    console.log(subDocId);
+    this.db
+      .collection("images")
+      .doc(docId)
+      .collection("comment")
+      .doc(subDocId)
+      .delete()
+      .then(() => {
+        console.log("コメントの削除完了");
+      });
   }
   deleteStore(docId: string) {
     this.db
@@ -150,6 +171,28 @@ export default class Images extends Vue {
         this.downLoad();
       });
   }
+  deleteStoreSub(docId: string) {
+    this.db
+      .collection("images")
+      .doc(docId)
+      .collection("comment")
+      .get()
+      .then((subDoc) => {
+        subDoc.forEach((doc) => {
+          console.log(doc.data());
+          this.db
+            .collection("images")
+            .doc(docId)
+            .collection("comment")
+            .doc(doc.id)
+            .delete()
+            .then(() => {
+              console.log("subコレクション削除");
+            });
+        });
+      });
+  }
+
   deleteStorage(fileName: string) {
     this.storage
       .ref()
