@@ -156,9 +156,12 @@ export default class Post extends Vue {
       .doc(docId)
       .delete()
       .then(() => {
+        this.postList = this.removePost(docId)
         console.log("store削除完了");
-        this.fetchPost();
       });
+  }
+  removePost(docId: string) {
+    return this.postList.filter(post => post.id !== docId)
   }
   deleteStoreSubAll(docId: string) {
     this.db
