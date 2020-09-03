@@ -3,7 +3,7 @@
     <input type="text" v-model="comment" />
     <p>削除{{docId}}</p>
     <button :disabled="resButton" @click="resComment(docId)">コメントする</button>
-    <div v-for="(comment, index) in commentList" :key="index">
+    <div v-for="(comment, index) in resList" :key="index">
       <p v-if="docId === comment.data.docId">
         {{comment.data.displayName}}:{{ comment.data.comment}}
         <button
@@ -25,6 +25,7 @@ export default class Comment extends Vue {
   @Prop() commentList!: CommentList[];
 
   comment = "";
+  resList: CommentList[] = []
   auth = firebase.auth();
   db = firebase.firestore();
   resButton = true;
@@ -37,11 +38,14 @@ export default class Comment extends Vue {
       this.resButton = true;
     }
   }
+  @Watch("commentList")
+  listSave() {
+    this.resList = this.commentList
+  }
 
   resComment(docId: string) {
     const comment = this.comment;
     this.comment = "";
-    console.log(docId);
     const user = this.auth.currentUser!;
     const data = {
       displayName: user.displayName!,
@@ -60,7 +64,7 @@ export default class Comment extends Vue {
           id: doc.id,
           data: data,
         };
-        this.commentList.unshift(pushData);
+        this.resList.unshift(pushData);
         console.log("comment追加");
       });
   }
@@ -84,7 +88,11 @@ export default class Comment extends Vue {
       .delete()
       .then(() => {
         console.log("コメントの削除完了");
+       this.resList = this.removeComment(subDocId)
       });
+  }
+  removeComment(subDocId: string) {
+   return this.resList.filter(comment => comment.id !== subDocId)
   }
 }
 </script>

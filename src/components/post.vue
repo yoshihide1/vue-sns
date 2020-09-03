@@ -59,7 +59,6 @@ export default class Post extends Vue {
   }
   async fetchPost() {
     const postList: any = [];
-    const commentList: any = [];
     const mainDoc = await this.db
       .collection("images")
       .orderBy("timeStamp", "desc")
@@ -69,7 +68,15 @@ export default class Post extends Vue {
       postList.push({ id: doc.id, data: doc.data() });
     });
     this.postList = postList;
-    const subDoc = await this.db.collectionGroup("comment").limit(10).get();
+    this.fetchComment();
+  }
+  async fetchComment() {
+    const commentList: any = [];
+    const subDoc = await this.db
+      .collectionGroup("comment")
+      .orderBy("timeStamp", "desc")
+      .limit(10)
+      .get();
     subDoc.forEach((doc) => {
       commentList.push({ id: doc.id, data: doc.data() });
     });
@@ -123,16 +130,16 @@ export default class Post extends Vue {
           data: data,
         };
         this.postList.unshift(storeImage);
-        console.log("store完了");
         this.comment = "";
+        console.log("store完了");
       })
       .catch(() => {
         alert("失敗しました");
       });
   }
-  deleteButtonCheck(uid: string): boolean {
+  deleteButtonCheck(docUid: string): boolean {
     const userUid = this.auth.currentUser!.uid;
-    if (uid === userUid) {
+    if (docUid === userUid) {
       return true;
     } else {
       return false;
