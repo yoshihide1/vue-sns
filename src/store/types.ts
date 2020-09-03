@@ -8,11 +8,11 @@ export interface SnsState {
 
 }
 
-export interface ImageList {
+export interface PostList {
   id: string;
   data: {
     displayName: string;
-    comment?: string;
+    comment: string;
     imageUrl?: string;
     fileName?: string;
     uid: string;
@@ -21,7 +21,10 @@ export interface ImageList {
 }
 export interface CommentList {
   id: string;
-  displayName: string;
-  docId: string;
-  uid: string
+  data: {
+    displayName: string;
+    comment: string;
+    docId: string;
+    uid: string;
+  }
 }

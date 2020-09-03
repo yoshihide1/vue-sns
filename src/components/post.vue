@@ -1,5 +1,5 @@
 <template>
-  <div id="images">
+  <div id="post">
     <p>コメント</p>
     <p>
       <textarea v-model="comment" name id cols="30" rows="10"></textarea>
@@ -9,30 +9,21 @@
       <button :disabled="postButton" @click="saveStorage">投稿</button>
     </p>
     <p>
-      <button @click="downLoad">画像取得</button>
+      <button @click="fetchPost">画像取得</button>
     </p>
-    <div class="image__list" v-for="(image, index) in images" :key="index">
-      <img :src="image.data.imageUrl" alt />
-      <p>名前:{{ image.data.displayName }}</p>
-      <p>コメント:{{ image.data.comment }}</p>
+    <div class="post__list" v-for="(post, index) in postList" :key="index">
+      <img :src="post.data.imageUrl" alt />
+      <p>名前:{{ post.data.displayName }}</p>
+      <p>コメント:{{ post.data.comment }}</p>
 
-      <Comment :docId="image.id" />
+      <Comment :docId="post.id" :commentList="commentList" />
 
-      <div v-for="(res, index) in comments" :key="index">
-        <p v-if="res.data.docId === image.id">
-          {{res.data.displayName}}>{{res.data.comment }}
-          <button
-            v-if="deleteCheck(res.data.uid)"
-            @click="deleteComment(image.id, res.id)"
-          >コメント削除</button>
-        </p>
-      </div>
-      <p>削除docID:{{image.id}}</p>
-      <p>削除FileName:{{ image.data.fileName }}</p>
-      <p>削除uid:{{ image.data.uid }}</p>
+      <p>削除docID:{{post.id}}</p>
+      <p>削除FileName:{{ post.data.fileName }}</p>
+      <p>削除uid:{{ post.data.uid }}</p>
       <button
-        v-if="deleteCheck(image.data.uid)"
-        @click="deletePost(image.id, image.data.fileName)"
+        v-if="deleteButtonCheck(post.data.uid)"
+        @click="deletePost(post.id, post.data.fileName)"
       >削除</button>
     </div>
   </div>
@@ -41,21 +32,21 @@
 <script lang="ts">
 import firebase from "../plugins/firebase";
 import { Component, Vue } from "vue-property-decorator";
-import { ImageList, CommentList } from "../store/types";
+import { PostList, CommentList } from "../store/types";
 import Comment from "@/components/comment.vue";
 @Component({
   components: {
     Comment,
   },
 })
-export default class Images extends Vue {
+export default class Post extends Vue {
   storage = firebase.storage();
   db = firebase.firestore();
   auth = firebase.auth();
-  images: ImageList[] = [];
+  postList: PostList[] = [];
   imageFile: any = "";
-  comment: string | null = "";
-  comments: CommentList[] = [];
+  comment = "";
+  commentList: CommentList[] = [];
   postButton = false;
 
   getDate(): string {
@@ -66,23 +57,23 @@ export default class Images extends Vue {
     e.preventDefault();
     this.imageFile = e.target.files[0];
   }
-  async downLoad() {
-    const imageList: any = [];
+  async fetchPost() {
+    const postList: any = [];
     const commentList: any = [];
-    const snapshot = await this.db
+    const mainDoc = await this.db
       .collection("images")
       .orderBy("timeStamp", "desc")
       .limit(5)
       .get();
-    snapshot.forEach((doc) => {
-      imageList.push({ id: doc.id, data: doc.data() });
+    mainDoc.forEach((doc) => {
+      postList.push({ id: doc.id, data: doc.data() });
     });
-    this.images = imageList;
+    this.postList = postList;
     const subDoc = await this.db.collectionGroup("comment").limit(10).get();
     subDoc.forEach((doc) => {
       commentList.push({ id: doc.id, data: doc.data() });
     });
-    this.comments = commentList;
+    this.commentList = commentList;
   }
   saveStorage() {
     if (!this.imageFile && !this.comment) {
@@ -115,7 +106,7 @@ export default class Images extends Vue {
       return;
     }
     const data = {
-      displayName: user.displayName,
+      displayName: user.displayName!,
       comment: this.comment,
       imageUrl: imageUrl,
       fileName: fileName,
@@ -127,11 +118,11 @@ export default class Images extends Vue {
       .add(data)
       .then((doc) => {
         console.log(doc);
-        const storeImage: ImageList = {
+        const storeImage: PostList = {
           id: doc.id,
           data: data,
         };
-        this.images.unshift(storeImage);
+        this.postList.unshift(storeImage);
         console.log("store完了");
         this.comment = "";
       })
@@ -139,7 +130,7 @@ export default class Images extends Vue {
         alert("失敗しました");
       });
   }
-  deleteCheck(uid: string): boolean {
+  deleteButtonCheck(uid: string): boolean {
     const userUid = this.auth.currentUser!.uid;
     if (uid === userUid) {
       return true;
@@ -149,19 +140,8 @@ export default class Images extends Vue {
   }
   deletePost(docId: string, fileName: string) {
     this.deleteStore(docId);
-    this.deleteStoreSub(docId);
+    this.deleteStoreSubAll(docId);
     this.deleteStorage(fileName);
-  }
-  deleteComment(docId: string, subDocId: string) {
-    this.db
-      .collection("images")
-      .doc(docId)
-      .collection("comment")
-      .doc(subDocId)
-      .delete()
-      .then(() => {
-        console.log("コメントの削除完了");
-      });
   }
   deleteStore(docId: string) {
     this.db
@@ -170,10 +150,10 @@ export default class Images extends Vue {
       .delete()
       .then(() => {
         console.log("store削除完了");
-        this.downLoad();
+        this.fetchPost();
       });
   }
-  deleteStoreSub(docId: string) {
+  deleteStoreSubAll(docId: string) {
     this.db
       .collection("images")
       .doc(docId)
@@ -181,7 +161,6 @@ export default class Images extends Vue {
       .get()
       .then((subDoc) => {
         subDoc.forEach((doc) => {
-          console.log(doc.data());
           this.db
             .collection("images")
             .doc(docId)
@@ -208,10 +187,10 @@ export default class Images extends Vue {
 </script>
 
 <style lang="scss" scoped>
-#images {
+#post {
   width: 100%;
 }
-.image__list {
+.post__list {
   background-color: gainsboro;
   padding: 1rem 0 1rem;
   margin: 1rem 0 1rem;
