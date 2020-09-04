@@ -10,50 +10,48 @@ class VuexStore extends VuexModule {
   private db = firebase.firestore();
 
 
- public get _commentList (): CommentList[] {
-  return this.commentList
- } 
- public get _postList (): PostList[] {
-   return this.postList
- }
-  @Mutation
-  addComment(comment: CommentList): void {
-    console.log("addComment")
-    this.commentList.unshift(comment)
-    console.log(this.commentList)
+  public get _commentList(): CommentList[] {
+    return this.commentList
   }
-  addPost(post: PostList): void {
+  public get _postList(): PostList[] {
+    return this.postList
+  }
+  @Mutation comment(comment: CommentList[]) {
+    this.commentList = comment
+  }
+  @Mutation post(post: PostList[]): void {
+    this.postList = post
+  }
+  @Mutation addComment(comment: CommentList) {
+    this.commentList.unshift(comment)
+  }
+  @Mutation addPost(post: PostList) {
     this.postList.unshift(post)
   }
-  deleteComment(subDocId: string): void {
-    this.commentList = this.removeComment(subDocId)
-  }
-  deletePost(docId: string): void {
-    this.postList = this.removePost(docId)
-  }
 
-  @Action
- async fetchPost() {
+  @Action async fetchPost() {
     const postList: any = []
     const mainDoc = await this.db.collection("images").orderBy("timeStamp", "desc").limit(5).get()
     mainDoc.forEach((doc) => {
-      postList.push({id: doc.id, data: doc.data()})
+      postList.push({ id: doc.id, data: doc.data() })
     })
+    this.post(postList)
     return postList
   }
-  @Action
-  async fetchComment() {
+  @Action async fetchComment() {
     const commentList: any = []
     const subDoc = await this.db.collectionGroup("comment").orderBy("timeStamp", "desc").limit(15).get()
     subDoc.forEach((subDoc) => {
-      commentList.push({id: subDoc.id, data: subDoc.data()})
+      commentList.push({ id: subDoc.id, data: subDoc.data() })
     })
+    this.comment(commentList)
     return commentList
   }
-  removeComment(subDocId: string): CommentList[] {
-    return this.commentList.filter(comment => comment.id !== subDocId)
+  @Action removeComment(subDocId: string) {
+    const remove: any = this.commentList.filter(comment => comment.id !== subDocId)
+    this.comment(remove)
   }
-  removePost(docId: string): PostList[] {
+  @Action removePost(docId: string): PostList[] {
     return this.postList.filter(post => post.id !== docId)
   }
 }

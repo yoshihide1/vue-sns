@@ -40,7 +40,7 @@ export default class Comment extends Vue {
     }
   }
   @Watch("commentList")
-  listSave() {
+  drawImage() {
     this.resList = this.commentList;
   }
 
@@ -65,9 +65,8 @@ export default class Comment extends Vue {
           id: doc.id,
           data: data,
         };
-        // this.resList.unshift(pushData);
         vuexStore.addComment(pushData);
-       this.resList = vuexStore._commentList
+        this.resList = vuexStore._commentList;
         console.log("comment追加");
       });
   }
@@ -90,8 +89,9 @@ export default class Comment extends Vue {
       .doc(subDocId)
       .delete()
       .then(() => {
+        vuexStore.removeComment(subDocId);
+        this.resList = vuexStore._commentList;
         console.log("コメントの削除完了");
-        vuexStore.deleteComment(subDocId);
       });
   }
 }
