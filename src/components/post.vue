@@ -33,6 +33,7 @@
 import firebase from "../plugins/firebase";
 import { Component, Vue } from "vue-property-decorator";
 import { PostList, CommentList } from "../store/types";
+import { vuexStore } from "../store/index";
 import Comment from "@/components/comment.vue";
 @Component({
   components: {
@@ -58,29 +59,8 @@ export default class Post extends Vue {
     this.imageFile = e.target.files[0];
   }
   async fetchPost() {
-    const postList: any = [];
-    const mainDoc = await this.db
-      .collection("images")
-      .orderBy("timeStamp", "desc")
-      .limit(5)
-      .get();
-    mainDoc.forEach((doc) => {
-      postList.push({ id: doc.id, data: doc.data() });
-    });
-    this.postList = postList;
-    this.fetchComment();
-  }
-  async fetchComment() {
-    const commentList: any = [];
-    const subDoc = await this.db
-      .collectionGroup("comment")
-      .orderBy("timeStamp", "desc")
-      .limit(10)
-      .get();
-    subDoc.forEach((doc) => {
-      commentList.push({ id: doc.id, data: doc.data() });
-    });
-    this.commentList = commentList;
+    this.postList = await vuexStore.fetchPost();
+    this.commentList = await vuexStore.fetchComment();
   }
   saveStorage() {
     if (!this.imageFile && !this.comment) {
@@ -156,12 +136,12 @@ export default class Post extends Vue {
       .doc(docId)
       .delete()
       .then(() => {
-        this.postList = this.removePost(docId)
+        this.postList = this.removePost(docId);
         console.log("store削除完了");
       });
   }
   removePost(docId: string) {
-    return this.postList.filter(post => post.id !== docId)
+    return this.postList.filter((post) => post.id !== docId);
   }
   deleteStoreSubAll(docId: string) {
     this.db

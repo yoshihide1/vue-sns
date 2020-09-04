@@ -19,13 +19,14 @@
 import { Watch, Prop, Component, Vue } from "vue-property-decorator";
 import firebase from "../plugins/firebase";
 import { CommentList } from "../store/types";
+import { vuexStore } from "../store/index";
 @Component
 export default class Comment extends Vue {
   @Prop() docId!: string;
   @Prop() commentList!: CommentList[];
 
   comment = "";
-  resList: CommentList[] = []
+  resList: CommentList[] = [];
   auth = firebase.auth();
   db = firebase.firestore();
   resButton = true;
@@ -40,7 +41,7 @@ export default class Comment extends Vue {
   }
   @Watch("commentList")
   listSave() {
-    this.resList = this.commentList
+    this.resList = this.commentList;
   }
 
   resComment(docId: string) {
@@ -64,7 +65,9 @@ export default class Comment extends Vue {
           id: doc.id,
           data: data,
         };
-        this.resList.unshift(pushData);
+        // this.resList.unshift(pushData);
+        vuexStore.addComment(pushData);
+       this.resList = vuexStore._commentList
         console.log("comment追加");
       });
   }
@@ -88,11 +91,8 @@ export default class Comment extends Vue {
       .delete()
       .then(() => {
         console.log("コメントの削除完了");
-       this.resList = this.removeComment(subDocId)
+        vuexStore.deleteComment(subDocId);
       });
-  }
-  removeComment(subDocId: string) {
-   return this.resList.filter(comment => comment.id !== subDocId)
   }
 }
 </script>
