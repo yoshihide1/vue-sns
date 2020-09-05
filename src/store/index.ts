@@ -9,12 +9,14 @@ class VuexStore extends VuexModule {
   private postList: PostList[] = []
   private myPostList: PostList[] = []
   private db = firebase.firestore();
+  private storage = firebase.storage();
 
 
   public get _commentList(): CommentList[] {
     return this.commentList
   }
   public get _postList(): PostList[] {
+    console.log("get")
     return this.postList
   }
   public get _myPostList(): PostList[] {
@@ -24,6 +26,7 @@ class VuexStore extends VuexModule {
     this.commentList = comment
   }
   @Mutation post(post: PostList[]) {
+    console.log("myPost")
     this.postList = post
   }
   @Mutation myPost(post: PostList[]) {
@@ -65,6 +68,25 @@ class VuexStore extends VuexModule {
   @Action loadMyPost(uid: string) {
     const post = this.postList.filter(post => post.data.uid === uid)
     this.myPost(post)
+  }
+  @Action deleteStore(docId: string) {
+    this.db.collection("images").doc(docId).delete().then(() => {
+      console.log("store削除")
+    })
+  }
+  @Action deleteStoreSubAll(docId: string) {
+    this.db.collection("images").doc(docId).collection("comment").get().then((subDoc) => {
+      subDoc.forEach((doc) => {
+        this.db.collection("images").doc(docId).collection("comment").doc(doc.id).delete().then(() => {
+          console.log("subコレクション削除");
+        })
+      })
+    })
+  }
+  @Action deleteStorage(fileName: string) {
+    this.storage.ref().child(`images/${fileName}`).delete().then(() => {
+      console.log("storage削除完了")
+    })
   }
 }
 

@@ -2,7 +2,7 @@
   <div id="user">
     <div class="my__post__list" v-for="(post, index) in myPost" :key="index">
       <p>
-        <button>削除(仮)</button>
+        <button @click="deleteMyPost(post.id)">削除(仮)</button>
       </p>
       <img :src="post.data.imageUrl" alt />
       <p>コメント: {{post.data.comment}}</p>
@@ -28,6 +28,9 @@ export default class MyPage extends Vue {
     const userUid = firebase.auth().currentUser!.uid;
     vuexStore.loadMyPost(userUid);
     this.myPost = vuexStore._myPostList;
+  }
+  deleteMyPost(docId: string) {
+    vuexStore.removePost(docId)
   }
 }
 </script>

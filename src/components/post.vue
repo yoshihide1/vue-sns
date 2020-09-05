@@ -50,12 +50,6 @@ export default class Post extends Vue {
   commentList: CommentList[] = [];
   postButton = false;
 
-  created() {
-    console.log(111);
-  }
-  mounted() {
-    console.log(222);
-  }
 
   getDate(): string {
     const time = new Date().getTime();
@@ -138,42 +132,11 @@ export default class Post extends Vue {
   }
 
   deletePost(docId: string, fileName: string) {
-    this.deleteStore(docId);
-    this.deleteStoreSubAll(docId);
-    this.deleteStorage(fileName);
-  }
-
-  deleteStore(docId: string) {
-    this.db
-      .collection("images")
-      .doc(docId)
-      .delete()
-      .then(() => {
-        vuexStore.removePost(docId);
-        this.postList = vuexStore._postList;
-        console.log("store削除完了");
-      });
-  }
-
-  deleteStoreSubAll(docId: string) {
-    this.db
-      .collection("images")
-      .doc(docId)
-      .collection("comment")
-      .get()
-      .then((subDoc) => {
-        subDoc.forEach((doc) => {
-          this.db
-            .collection("images")
-            .doc(docId)
-            .collection("comment")
-            .doc(doc.id)
-            .delete()
-            .then(() => {
-              console.log("subコレクション削除");
-            });
-        });
-      });
+      vuexStore.removePost(docId)
+      vuexStore.deleteStore(docId)
+      vuexStore.deleteStoreSubAll(docId)
+      vuexStore.deleteStorage(fileName)
+    this.postList = vuexStore._postList
   }
 
   deleteStorage(fileName: string) {
