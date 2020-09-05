@@ -1,8 +1,8 @@
 <template>
   <div id="post">
-    <p>コメント</p>
     <p>
-      <textarea v-model="comment" name id cols="30" rows="10"></textarea>
+      コメント
+      <input v-model="comment" type="text" />
     </p>
     <p><input type="file" accept=”image/*” @change="selectImage"/></p>
     <p>
@@ -24,7 +24,7 @@
       <button
         v-if="deleteButtonCheck(post.data.uid)"
         @click="deletePost(post.id, post.data.fileName)"
-      >削除</button>
+      >記事の削除</button>
     </div>
   </div>
 </template>
@@ -50,18 +50,28 @@ export default class Post extends Vue {
   commentList: CommentList[] = [];
   postButton = false;
 
+  created() {
+    console.log(111);
+  }
+  mounted() {
+    console.log(222);
+  }
+
   getDate(): string {
     const time = new Date().getTime();
     return String(time);
   }
+
   selectImage(e: any) {
     e.preventDefault();
     this.imageFile = e.target.files[0];
   }
+
   async fetchPost() {
     this.postList = await vuexStore.fetchPost();
     this.commentList = await vuexStore.fetchComment();
   }
+
   saveStorage() {
     if (!this.imageFile && !this.comment) {
       alert("コメントを入力するか画像を選択してください");
@@ -117,6 +127,7 @@ export default class Post extends Vue {
         alert("失敗しました");
       });
   }
+
   deleteButtonCheck(docUid: string): boolean {
     const userUid = this.auth.currentUser!.uid;
     if (docUid === userUid) {
@@ -125,24 +136,25 @@ export default class Post extends Vue {
       return false;
     }
   }
+
   deletePost(docId: string, fileName: string) {
     this.deleteStore(docId);
     this.deleteStoreSubAll(docId);
     this.deleteStorage(fileName);
   }
+
   deleteStore(docId: string) {
     this.db
       .collection("images")
       .doc(docId)
       .delete()
       .then(() => {
-        this.postList = this.removePost(docId);
+        vuexStore.removePost(docId);
+        this.postList = vuexStore._postList;
         console.log("store削除完了");
       });
   }
-  removePost(docId: string) {
-    return this.postList.filter((post) => post.id !== docId);
-  }
+
   deleteStoreSubAll(docId: string) {
     this.db
       .collection("images")

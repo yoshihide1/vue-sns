@@ -19,7 +19,7 @@ class VuexStore extends VuexModule {
   @Mutation comment(comment: CommentList[]) {
     this.commentList = comment
   }
-  @Mutation post(post: PostList[]): void {
+  @Mutation post(post: PostList[]) {
     this.postList = post
   }
   @Mutation addComment(comment: CommentList) {
@@ -51,8 +51,9 @@ class VuexStore extends VuexModule {
     const remove: any = this.commentList.filter(comment => comment.id !== subDocId)
     this.comment(remove)
   }
-  @Action removePost(docId: string): PostList[] {
-    return this.postList.filter(post => post.id !== docId)
+  @Action removePost(docId: string) {
+    const remove: any = this.postList.filter(post => post.id !== docId)
+    this.post(remove)
   }
 }
 
