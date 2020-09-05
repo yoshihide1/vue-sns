@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
-import User from '../views/user.vue'
+import User from '../views/User.vue'
 import SignIn from '../components/auth/signIn.vue'
 import SignUp from '../components/auth/signUp.vue'
 import firebase from "../plugins/firebase";
@@ -19,7 +19,7 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: '/user/:id',
-    name: 'user',
+    name: 'User',
     component: User,
     meta: { requiresAuth: true }
   },

@@ -7,6 +7,7 @@ import { PostList, CommentList } from './types'
 class VuexStore extends VuexModule {
   private commentList: CommentList[] = []
   private postList: PostList[] = []
+  private myPostList: PostList[] = []
   private db = firebase.firestore();
 
 
@@ -16,11 +17,17 @@ class VuexStore extends VuexModule {
   public get _postList(): PostList[] {
     return this.postList
   }
+  public get _myPostList(): PostList[] {
+    return this.myPostList
+  }
   @Mutation comment(comment: CommentList[]) {
     this.commentList = comment
   }
   @Mutation post(post: PostList[]) {
     this.postList = post
+  }
+  @Mutation myPost(post: PostList[]) {
+    this.myPostList = post
   }
   @Mutation addComment(comment: CommentList) {
     this.commentList.unshift(comment)
@@ -54,6 +61,10 @@ class VuexStore extends VuexModule {
   @Action removePost(docId: string) {
     const remove: any = this.postList.filter(post => post.id !== docId)
     this.post(remove)
+  }
+  @Action loadMyPost(uid: string) {
+    const post = this.postList.filter(post => post.data.uid === uid)
+    this.myPost(post)
   }
 }
 

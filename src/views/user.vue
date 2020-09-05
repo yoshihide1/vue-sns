@@ -1,14 +1,21 @@
 <template>
-  <div class="about">
+  <div class="users">
     <p>User: {{$route.params.id}}
     </p>
-    <h1>This is an about page</h1>
+  <MyPage />
   </div>
 </template>
 
-<script>
-export default {
-  name: 'user'
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
+import { vuexStore } from "../store/index";
+import MyPage from "@/components/users/myPage.vue"
+@Component({
+  components: {
+    MyPage
+  }
+})
+export default class User extends Vue {
 }
 </script>
 

@@ -3,7 +3,7 @@
     <div id="nav">
       <div v-if="loginUser">
         <router-link to="/">Home</router-link>|
-        <router-link :to="{name: 'user', params: {id: id}}">User</router-link>
+        <router-link :to="{name: 'User', params: {id: id}}">User</router-link>
         <SignOut />
       </div>
       <div v-if="noUser">
