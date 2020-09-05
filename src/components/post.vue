@@ -50,6 +50,11 @@ export default class Post extends Vue {
   commentList: CommentList[] = [];
   postButton = false;
 
+  mounted() {//最終的に読み込み時にfetchに変更
+    if (vuexStore._postList.length > 0) {
+      this.postList = vuexStore._postList;
+    }
+  }
 
   getDate(): string {
     const time = new Date().getTime();
@@ -132,21 +137,11 @@ export default class Post extends Vue {
   }
 
   deletePost(docId: string, fileName: string) {
-      vuexStore.removePost(docId)
-      vuexStore.deleteStore(docId)
-      vuexStore.deleteStoreSubAll(docId)
-      vuexStore.deleteStorage(fileName)
-    this.postList = vuexStore._postList
-  }
-
-  deleteStorage(fileName: string) {
-    this.storage
-      .ref()
-      .child(`images/${fileName}`)
-      .delete()
-      .then(() => {
-        console.log("storage削除完了");
-      });
+    vuexStore.removePost(docId);
+    vuexStore.deleteStore(docId);
+    vuexStore.deleteStoreSubAll(docId);
+    vuexStore.deleteStorage(fileName);
+    this.postList = vuexStore._postList;
   }
 }
 </script>

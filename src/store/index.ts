@@ -16,7 +16,6 @@ class VuexStore extends VuexModule {
     return this.commentList
   }
   public get _postList(): PostList[] {
-    console.log("get")
     return this.postList
   }
   public get _myPostList(): PostList[] {
@@ -26,7 +25,6 @@ class VuexStore extends VuexModule {
     this.commentList = comment
   }
   @Mutation post(post: PostList[]) {
-    console.log("myPost")
     this.postList = post
   }
   @Mutation myPost(post: PostList[]) {
@@ -40,6 +38,7 @@ class VuexStore extends VuexModule {
   }
 
   @Action async fetchPost() {
+    console.log("fetchPost")
     const postList: any = []
     const mainDoc = await this.db.collection("images").orderBy("timeStamp", "desc").limit(5).get()
     mainDoc.forEach((doc) => {
@@ -49,6 +48,7 @@ class VuexStore extends VuexModule {
     return postList
   }
   @Action async fetchComment() {
+    console.log("fetchComment")
     const commentList: any = []
     const subDoc = await this.db.collectionGroup("comment").orderBy("timeStamp", "desc").limit(15).get()
     subDoc.forEach((subDoc) => {
